@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { loggedUser } from "./services/auth";
 
-export const middleware = async (req: NextRequest) => {
+export const proxy = async (req: NextRequest) => {
   const { pathname } = req.nextUrl;
   const loggedAdmin = await loggedUser();
 
