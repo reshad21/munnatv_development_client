@@ -6,7 +6,6 @@ import { TQuery } from "@/types/query.type";
 import { Plus } from "lucide-react";
 import ProjectsTable from "./_components/ProjectsTable";
 import { getAllProjects } from "@/services/projects";
-import { Pagination } from "swiper/modules";
 import PaginationWrapper from "@/components/ui/PaginationWrapper";
 
 const ProjectManagement = async (props: {

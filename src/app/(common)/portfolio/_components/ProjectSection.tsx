@@ -1,12 +1,11 @@
 import React from 'react';
 import Project from './Project';
 import ProjectSidebar from './ProjectSidebar';
-import { getAllProjects } from '@/services/projects';
-import { TQuery } from '@/types/query.type';
 import PaginationWrapper from '@/components/ui/PaginationWrapper';
+import { TProject } from '@/types/project.types';
 
 type ProjectSectionProps = {
-    portfolioItems: any;
+    portfolioItems: { data: TProject[]; meta: { totalPages: number } };
     page: number;
 };
 
