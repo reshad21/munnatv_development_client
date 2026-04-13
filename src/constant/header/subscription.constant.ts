@@ -1,0 +1,1 @@
+export const subscriptionTableHeaders: string[] = ["Date", "Email", "Actions"];
