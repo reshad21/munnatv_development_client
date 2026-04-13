@@ -2,20 +2,29 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { Color, Scene, Fog, PerspectiveCamera, Vector3, Group } from "three";
-import ThreeGlobe from "three-globe";
 import { useThree, Canvas, extend } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import countries from "../../constant/globe.json";
 
+let ThreeGlobe: any = null;
+
+// Dynamically import ThreeGlobe only on client side
+const loadThreeGlobe = async () => {
+  if (ThreeGlobe) return ThreeGlobe;
+  if (typeof window === 'undefined') return null;
+  
+  const module = await import("three-globe");
+  ThreeGlobe = module.default;
+  return ThreeGlobe;
+};
+
 declare module "@react-three/fiber" {
     interface ThreeElements {
         threeGlobe: ThreeElements["mesh"] & {
-            new(): ThreeGlobe;
+            new(): any;
         };
     }
 }
-
-extend({ ThreeGlobe: ThreeGlobe });
 
 const RING_PROPAGATION_SPEED = 3;
 const aspect = 1.2;
@@ -64,7 +73,7 @@ interface WorldProps {
 
 
 export function Globe({ globeConfig, data }: WorldProps) {
-    const globeRef = useRef<ThreeGlobe | null>(null);
+    const globeRef = useRef<any | null>(null);
     const groupRef = useRef<Group>(null);
     const [isInitialized, setIsInitialized] = useState(false);
 
@@ -87,11 +96,23 @@ export function Globe({ globeConfig, data }: WorldProps) {
 
     // Initialize globe only once
     useEffect(() => {
-        if (!globeRef.current && groupRef.current) {
-            globeRef.current = new ThreeGlobe();
-            (groupRef.current as any).add(globeRef.current);
-            setIsInitialized(true);
-        }
+        const initGlobe = async () => {
+            const ThreeGlobeLib = await loadThreeGlobe();
+            if (!ThreeGlobeLib || !groupRef.current) return;
+            
+            if (!ThreeGlobe) {
+                ThreeGlobe = ThreeGlobeLib;
+                extend({ threeGlobe: ThreeGlobeLib });
+            }
+            
+            if (!globeRef.current) {
+                globeRef.current = new ThreeGlobe();
+                (groupRef.current as any).add(globeRef.current);
+                setIsInitialized(true);
+            }
+        };
+        
+        initGlobe();
     }, []);
 
     // Build material when globe is initialized or when relevant props change

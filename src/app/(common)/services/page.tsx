@@ -44,15 +44,17 @@ export default function ServicesPage() {
       <section className="py-20 px-4 md:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-12">
-            {fakeServices.map((s) =>
-              renderServiceItem(
-                s.id,
-                s.title,
-                s.image?.src ?? "",
-                s.title,
-                s.description
-              )
-            )}
+            {fakeServices.map((s) => (
+              <div key={s.id}>
+                {renderServiceItem(
+                  s.id,
+                  s.title,
+                  s.image?.src ?? "",
+                  s.title,
+                  s.description
+                )}
+              </div>
+            ))}
           </div>
         </div>
       </section>
