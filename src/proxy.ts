@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { loggedUser } from "./services/auth";
 
 export const proxy = async (req: NextRequest) => {
   const { pathname } = req.nextUrl;
-  const loggedAdmin = await loggedUser();
+  const accessToken = req.cookies.get("accessToken")?.value;
 
   const requestHeaders = new Headers(req.headers);
   requestHeaders.set("x-pathname", pathname);
@@ -14,7 +13,7 @@ export const proxy = async (req: NextRequest) => {
     },
   });
 
-  if (!loggedAdmin?.email) {
+  if (!accessToken) {
     if (pathname.startsWith("/dashboard")) {
       return NextResponse.redirect(new URL("/login", req.url));
     }
