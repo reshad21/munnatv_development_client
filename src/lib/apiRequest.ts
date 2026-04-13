@@ -27,6 +27,16 @@ export const apiRequest = async (
   endpoint: string,
   options: RequestInit & { authRequired?: boolean } = {}
 ): Promise<any> => {
+  // Check if API_BASE_URL is configured
+  if (!API_BASE_URL) {
+    console.error("API_BASE_URL environment variable is not configured");
+    return {
+      statusCode: 500,
+      data: null,
+      message: "API URL not configured"
+    };
+  }
+
   const headers = new Headers(options.headers);
 
   // Set Content-Type unless it's FormData
@@ -42,32 +52,41 @@ export const apiRequest = async (
     }
   }
 
-  const response = await fetch(`${API_BASE_URL}/${endpoint}`, {
-    ...options,
-    headers,
-  });
+  try {
+    const response = await fetch(`${API_BASE_URL}/${endpoint}`, {
+      ...options,
+      headers,
+    });
 
-  // Handle token expiration only if auth was required
-  if (response.status === 401 && options.authRequired) {
-    try {
-      const newToken = await getAccessToken();
-      if (newToken) {
-        headers.set("Authorization", `Bearer ${newToken}`);
-        return apiRequest(endpoint, { ...options, headers });
+    // Handle token expiration only if auth was required
+    if (response.status === 401 && options.authRequired) {
+      try {
+        const newToken = await getAccessToken();
+        if (newToken) {
+          headers.set("Authorization", `Bearer ${newToken}`);
+          return apiRequest(endpoint, { ...options, headers });
+        }
+      } catch (error) {
+        console.error("Failed to refresh token:", error);
+        // If we can't refresh the token, return the original response
+        return response.json();
       }
-    } catch (error) {
-      console.error("Failed to refresh token:", error);
-      // If we can't refresh the token, return the original response
-      return response.json();
+
+      logout();
+      if (typeof window !== "undefined") {
+        window.location.href = "/login"; // Redirect to login page
+      } else {
+        throw new Error("Unauthorized access. Please log in again.");
+      }
     }
 
-    logout();
-    if (typeof window !== "undefined") {
-      window.location.href = "/login"; // Redirect to login page
-    } else {
-      throw new Error("Unauthorized access. Please log in again.");
-    }
+    return response.json();
+  } catch (error) {
+    console.error(`API request failed for ${endpoint}:`, error);
+    return {
+      statusCode: 500,
+      data: null,
+      message: error instanceof Error ? error.message : "API request failed"
+    };
   }
-
-  return response.json();
 };
