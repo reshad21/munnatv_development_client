@@ -17,7 +17,18 @@ import Header from "@/components/shared/Header";
 
 
 const HomePage = async() => {
-  const portfolioItems = await getAllProjects([]);
+  let portfolioItems = null;
+  
+  try {
+    const result = await getAllProjects([]);
+    if (result?.statusCode === 200) {
+      portfolioItems = result?.data;
+    }
+  } catch (error) {
+    console.error("Failed to fetch projects:", error);
+    // Continue loading page even if projects fail
+  }
+  
   return (
     <>
       <Header />
@@ -25,7 +36,7 @@ const HomePage = async() => {
       <StorySection />
       <OurServices />
       <WorkProcess />
-      <PortfolioSection portfolioItems={portfolioItems?.data}/>
+      {portfolioItems && <PortfolioSection portfolioItems={portfolioItems}/>}
       <TestimonialSection />
       <BannerSection />
       <TeamMemberSection />
